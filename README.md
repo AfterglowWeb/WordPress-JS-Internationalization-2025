@@ -1,0 +1,184 @@
+# WordPress Theme Internationalization (i18n) Guide 2025
+
+This guide explains how to fully internationalize JavaScript (and PHP) files in a WordPress theme.
+
+*Last updated: June 29, 2025*
+
+## Prerequisites
+
+Before proceeding, make sure you have:
+
+- **WP-CLI** installed and configured
+  - If not installed, follow the instructions at: [https://wp-cli.org/](https://wp-cli.org/)
+
+- **Sufficient PHP Memory**
+  - You may need to increase the PHP memory limit to 256M or more if you encounter memory issues
+  - To find your php.ini file:
+    ```bash
+    php --ini
+    ```
+  - Open the loaded php.ini, look for `memory_limit` and change it to:
+    ```
+    memory_limit = 512M
+    ```
+  - Alternatively, add these lines to your wp-config.php file (remember to remove them once you've completed the translation process):
+    ```php
+    define('WP_MEMORY_LIMIT', '512M');
+    define('WP_MAX_MEMORY_LIMIT', '512M');
+    ```
+
+## Step-by-Step Guide
+
+### 1. Correctly use wp.i18n methods in your JavaScript files
+
+Use wp.i18n methods directly in your components like this:
+
+```jsx
+export function MyComponent() {
+    const { __ } =  wp.i18n;
+    return(
+        <div>
+            <p>{__( 'My string', 'my-text-domain' )}</p>
+        </div>
+    );
+}
+```
+
+> Do not import @wordpress/i18n methods at the top of your files like this, it currently won't work:
+> ```jsx
+> import { __ } from '@wordpress/i18n';
+> ```
+
+If you previously used the import syntax, you'll need to refactor all your components to use the direct wp.i18n approach shown above. This may be time-consuming but is necessary for proper internationalization.
+
+### 2. Build your theme
+
+For internationalization, you must use the compiled JavaScript files from your build or dist directory, not the original source files in src. This ensures all translations are properly processed during the build step.
+Open a terminal at the root of your theme and build your project:
+
+```bash
+npm run build 
+# or 
+yarn build
+# or any other build command present in your package.json
+```
+
+### 3. Generate POT file for the theme
+
+Create a POT file (translation template):
+
+```bash
+wp i18n make-pot ./ languages/my-text-domain.pot --exclude="node_modules/*,src/*"
+```
+
+This excludes node_modules, src directories, and any other directories you don't want to be scanned for translation.
+If your source files are located in a directory other than "src" (such as "source", "js-src", or "assets/js"), modify the exclude pattern accordingly:
+
+```bash
+wp i18n make-pot ./ languages/my-text-domain.pot --exclude="node_modules/*,your-source-dir/*,other-dir-to-exclude/*"
+```
+
+### 4. Create or update the PO file
+
+You have two options:
+
+**Option 1:** Update the PO file if it already exists
+```bash
+wp i18n update-po languages/my-text-domain.pot languages/my-text-domain-fr_FR.po
+```
+
+**Option 2:** Create the PO file with Poedit by creating a new translation from the POT file
+
+### 5. Translate using Poedit
+
+Use Poedit to translate the POT file into a PO file at: [https://poedit.net/](https://poedit.net/)
+This is the fastest method I found based on personal experience with Poedit. The free version is sufficient for all necessary translation tasks.
+
+### 6. Generate MO and JSON files
+
+Generate MO file and JSON files:
+
+```bash
+wp i18n make-mo languages/my-text-domain-fr_FR.po
+wp i18n make-json ./languages
+```
+
+### 7. Load translations in your theme
+
+In your theme PHP files, use the following function to load the translations:
+
+```php
+add_action( 'wp_enqueue_scripts', function() {
+
+    $file = get_template_directory_uri() . '/dist/index.js';
+    if(false === is_readable($file)) {
+        return;
+    }
+    $version = filemtime($file);
+
+    wp_enqueue_script( 'my-script', $file, array('wp-element', 'wp-components', 'wp-i18n'), $version, array( 'in_footer' => true ) );
+            
+    if(defined('WP_LANG_DIR')) {
+        wp_set_script_translations( 'my-script', 'my-text-domain', WP_LANG_DIR . '/themes' );
+    } else {
+        wp_set_script_translations( 'my-script', 'my-text-domain', get_template_directory() . '/languages' );
+    }
+});
+```
+
+> **Note:** After several tests, the script has to be enqueued first, registering it is not enough. We also need to test the language directory for latest WordPress versions.
+
+### 8. Copy language files to WordPress languages directory
+
+You may need to copy the PO, MO, and JSON files to the wp-content/languages/themes directory of WordPress for the latest WordPress versions.
+
+Here's a function to do that on translation file update, you can adjust the ```$theme_lang_dir = get_template_directory() . '/languages';``` part to your needs :
+
+```php
+function may_copy_theme_lang_to_languages_dir(): void {
+    
+    if (false === is_admin() || false === defined('WP_LANG_DIR')) {
+        return;
+    }
+
+    $theme_lang_dir = realpath( get_template_directory() . '/languages' );
+
+    try{
+        if ( false === is_readable( $theme_lang_dir ) ) {
+            error_log( 'Theme languages directory does not exist or is not readable: ' . $theme_lang_dir );
+            return;
+        }
+        $extensions = array('mo', 'po', 'json');
+        $source_lang_files = array();
+        foreach ( $extensions as $ext ) {
+            $files = glob( $theme_lang_dir . '/*.' . $ext );
+            if ( is_array( $files ) && ! empty( $files ) ) {
+                $source_lang_files = array_merge( $source_lang_files, $files );
+            }
+        }
+        if ( empty( $source_lang_files ) ) {
+            error_log( 'No language files found in theme languages directory: ' . $theme_lang_dir );
+            return;
+        }
+
+        $target_lang_dir = WP_LANG_DIR . '/themes';
+        if ( is_writable( $target_lang_dir ) ) {
+            foreach ( $source_lang_files as $file ) {
+                $filename = basename( $file );
+                $target_file = $target_lang_dir . '/' . $filename;
+                if ( false === is_readable( $target_file ) || filemtime( $file ) > filemtime( $target_file ) ) {
+                    if ( copy( $file, $target_file ) ) {
+                        error_log( 'Copied language file: ' . $filename );
+                    } else {
+                        error_log( 'Failed to copy language file: ' . $filename );
+                    }
+                }
+            }
+        } else {
+            error_log( 'Target languages directory does not exist: ' . $target_lang_dir );
+        }
+    } catch (\Exception $e) {
+        error_log( 'Error copying theme language files: ' . $e->getMessage() );
+    }    
+}
+```
