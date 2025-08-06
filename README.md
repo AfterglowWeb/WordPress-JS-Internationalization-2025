@@ -1,4 +1,4 @@
-# WordPress Theme Internationalization (i18n) Guide 2025
+# WordPress Theme and Plugin JS Internationalization (i18n) Guide 2025
 ## Tested on WordPress versions: 6.8.1, 6.8.2
 This guide explains how to fully internationalize JavaScript (and PHP) files in a WordPress theme.
 
@@ -61,15 +61,15 @@ yarn build
 # or any other build command present in your package.json
 ```
 
-### 3. Generate POT file for the theme
+### 3. Generate POT file for the theme or the plugin
 
 Create a POT file (translation template):
 
 ```bash
-wp i18n make-pot ./ languages/my-text-domain.pot --exclude="node_modules/*,src/*"
+wp i18n make-pot ./ languages/my-text-domain.pot --exclude="node_modules/*,src/*,vendor/*"
 ```
 
-This excludes node_modules, src directories, and any other directories you don't want to be scanned for translation.
+This excludes node_modules, src and php vendor directories, add any other directories you don't want to be scanned for translation.
 If your source files are located in a directory other than "src" (such as "source", "js-src", or "assets/js"), modify the exclude pattern accordingly:
 
 ```bash
@@ -129,9 +129,9 @@ For a comprehensive list of available internationalization options and commands,
 wp i18n --help
 ```
 
-### 7. Load translations in your theme
+### 7. Load translations in your theme or your plugin
 
-In your theme PHP files, use the following function to load the translations:
+For a theme, use the following PHP function to load the translations:
 
 ```php
 add_action( 'wp_enqueue_scripts', function() {
@@ -152,7 +152,30 @@ add_action( 'wp_enqueue_scripts', function() {
 });
 ```
 
-> **Note:** After several tests, the script has to be enqueued first, registering it is not enough. We also need to test the language directory for latest WordPress versions.
+For a plugin, use the following PHP function to load the translations:
+
+```php
+add_action('wp_enqueue_scripts', function () {
+    
+	$file = plugins_url('build/index.js', __FILE__);
+  if(false === is_readable($file)) {
+      return;
+  }
+  $version = filemtime($file);
+    
+  wp_enqueue_script('my-script', $file, array('wp-element', 'wp-components', 'wp-i18n'), $version, array( 'in_footer' => true ) );
+
+  if(defined('WP_LANG_DIR')) {
+    wp_set_script_translations( 'my-script', 'my-text-domain', WP_LANG_DIR . '/plugins' );
+  } else {
+    wp_set_script_translations( 'my-script', 'my-text-domain', plugin_basename( dirname( __FILE__ ) ) . '/languages' );
+  }
+});
+```
+
+### 7. Load translations in your plugin
+
+> **Note:** After several tests, the script has to be enqueued first. Registering, setting translations and finally enqueuing it did not work in my environment. We also need to test the language directory for latest WordPress versions.
 
 ### 8. Copy language files to WordPress languages directory
 
