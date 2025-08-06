@@ -51,8 +51,21 @@ If you previously used the import syntax, you'll need to refactor all your compo
 
 ### 2. Build your theme
 
-For internationalization, you must use the compiled JavaScript files from your build or dist directory, not the original source files in src. This ensures all translations are properly processed during the build step.
-Open a terminal at the root of your theme and build your project:
+For internationalization, you must use the compiled JavaScript files from your build or dist directory, not the original source files in src.  
+Internationalization (i18n) strings are included in compiled .map files. To work with translations:  
+- Set your environment to development mode.  
+- Keep the .map files while translating.  
+- Once translations are complete, delete them before deploying to production.  
+- If .map files are missing, ensure your environment is set to development mode and run your development build command before proceeding.
+
+Open a terminal at the root of your theme to build your project:
+
+```bash
+npm run start 
+# or 
+yarn start
+# or any other start command present in your package.json
+```
 
 ```bash
 npm run build 
