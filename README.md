@@ -2,7 +2,21 @@
 ## Tested on WordPress versions: 6.8.1, 6.8.2
 This guide explains how to fully internationalize JavaScript (and PHP) files in a WordPress theme.
 
-## Prerequisites
+## Bash commands recap - Follow the Step-by-Step Guide for details
+
+```bash
+npm run start 
+wp i18n make-pot ./ languages/my-text-domain.pot --exclude="node_modules/*,src/*,vendor/*"
+cp languages/my-text-domain.pot languages/{my-text-domain}-{language-code}.po
+wp i18n update-po languages/my-text-domain.pot languages/{my-text-domain}-{language-code}.po
+wp i18n make-mo languages/{my-text-domain}-{language-code}.po
+wp i18n make-json ./languages
+npm run build
+```
+
+## Step-by-Step Guide
+
+### 1. Prerequisites
 
 Before proceeding, make sure you have:
 
@@ -25,9 +39,8 @@ Before proceeding, make sure you have:
     define('WP_MAX_MEMORY_LIMIT', '512M');
     ```
 
-## Step-by-Step Guide
 
-### 1. Correctly use wp.i18n methods in your JavaScript files
+### 2. Correctly use wp.i18n methods in your JavaScript files
 
 Use wp.i18n methods directly in your components like this:
 
@@ -49,7 +62,7 @@ export function MyComponent() {
 
 If you previously used the import syntax, you'll need to refactor all your components to use the direct wp.i18n approach shown above. This may be time-consuming but is necessary for proper internationalization.
 
-### 2. Build your theme
+### 3. Build your theme
 
 For internationalization, you must use the compiled JavaScript files from your build or dist directory, not the original source files in src.  
 Internationalization (i18n) strings are included in compiled .map files. To work with translations:  
@@ -67,14 +80,7 @@ yarn start
 # or any other start command present in your package.json
 ```
 
-```bash
-npm run build 
-# or 
-yarn build
-# or any other build command present in your package.json
-```
-
-### 3. Generate POT file for the theme or the plugin
+### 4. Generate POT file for the theme or the plugin
 
 Create a POT file (translation template):
 
@@ -89,7 +95,7 @@ If your source files are located in a directory other than "src" (such as "sourc
 wp i18n make-pot ./ languages/my-text-domain.pot --exclude="node_modules/*,your-source-dir/*,other-dir-to-exclude/*"
 ```
 
-### 4. Create or update the PO file (translation language)
+### 5. Create or update the PO file (translation language)
 
 Respect this filename format for translation language files: `{my-text-domain}-{language-code}.po`
 Then, proceed based on your scenario:
@@ -113,7 +119,7 @@ Manually create the PO file in Poedit by:
   - Opening Poedit → New Translation from POT File
   - Selecting my-text-domain.pot and saving as {my-text-domain}-{language-code}.po
 
-### 5. Translate the PO File (translation language)
+### 6. Translate the PO File (translation language)
 You can manually translate the resulting PO file in you code editor or you can use an application, the best known may be Poedit: [https://poedit.net/](https://poedit.net/)
 The free version is sufficient for all necessary translation tasks.
 
@@ -122,7 +128,7 @@ Manually – Edit it in a code editor (e.g., VS Code, Sublime Text).
 Using Poedit – The recommended GUI tool [https://poedit.net/](https://poedit.net/).
 The free version covers all essential translation needs.
 
-### 6. Generate MO and JSON files
+### 7. Generate MO and JSON files
 
 #### Generate MO file
 If you used Poedit, it automatically generates a .mo file. However, for WordPress compatibility, regenerate it via WP-CLI in your working directory:
@@ -142,7 +148,7 @@ For a comprehensive list of available internationalization options and commands,
 wp i18n --help
 ```
 
-### 7. Load translations in your theme or your plugin
+### 8. Load translations in your theme or your plugin
 
 For a theme, use the following PHP function to load the translations:
 
@@ -171,26 +177,24 @@ For a plugin, use the following PHP function to load the translations:
 add_action('wp_enqueue_scripts', function () {
     
 	$file = plugins_url('build/index.js', __FILE__);
-  if(false === is_readable($file)) {
-      return;
-  }
-  $version = filemtime($file);
-    
-  wp_enqueue_script('my-script', $file, array('wp-element', 'wp-components', 'wp-i18n'), $version, array( 'in_footer' => true ) );
+	if(false === is_readable($file)) {
+		return;
+	}
 
-  if(defined('WP_LANG_DIR')) {
-    wp_set_script_translations( 'my-script', 'my-text-domain', WP_LANG_DIR . '/plugins' );
-  } else {
-    wp_set_script_translations( 'my-script', 'my-text-domain', plugin_basename( dirname( __FILE__ ) ) . '/languages' );
-  }
+	$version = filemtime($file);
+	wp_enqueue_script('my-script', $file, array('wp-element', 'wp-components', 'wp-i18n'), $version, array( 'in_footer' => true ) );
+
+	if(defined('WP_LANG_DIR')) {
+	    wp_set_script_translations( 'my-script', 'my-text-domain', WP_LANG_DIR . '/plugins' );
+	} else {
+	    wp_set_script_translations( 'my-script', 'my-text-domain', plugin_basename( dirname( __FILE__ ) ) . '/languages' );
+	}
 });
 ```
 
-### 7. Load translations in your plugin
-
 > **Note:** After several tests, the script has to be enqueued first. Registering, setting translations and finally enqueuing it did not work in my environment. We also need to test the language directory for latest WordPress versions.
 
-### 8. Copy language files to WordPress languages directory
+### 9. Copy language files to WordPress languages directory
 
 You may need to copy the PO, MO, and JSON files to the wp-content/languages/themes directory of WordPress for the latest WordPress versions.
 
