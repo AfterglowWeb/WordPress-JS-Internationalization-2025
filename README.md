@@ -1,5 +1,5 @@
-# WordPress JS Internationalization (i18n)
-# Theme and Plugin Guide 2025
+# WordPress JS Internationalization (i18n)<br>Theme and Plugin Guide 2025
+
 This guide explains how to fully internationalize JavaScript (and PHP) files in a WordPress theme.<br>
 WordPress versions tested: 6.8.1, 6.8.2, 6.8.3
 
