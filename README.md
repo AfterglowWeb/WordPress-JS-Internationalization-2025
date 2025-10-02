@@ -1,6 +1,6 @@
 # WordPress JS Internationalization (i18n)<br>Theme and Plugin Guide 2025
 
-This guide explains how to fully internationalize JavaScript (and PHP) files in a WordPress theme.<br>
+This guide explains how to fully internationalize JavaScript (and PHP) files in a WordPress theme or plugin.<br>
 WordPress versions tested: 6.8.1, 6.8.2, 6.8.3
 
 ## Bash commands recap<br> Follow the Step-by-Step Guide for the details
@@ -71,7 +71,7 @@ If you previously used the import syntax, you'll need to refactor all your compo
 <br>
 <br>
 
-### 3. Build your theme
+### 3. Build your theme or your plugin
 
 For internationalization, you must use the compiled JavaScript files from your build or dist directory, not the original source files.  
 Internationalization (i18n) strings are included in compiled .map files. To work with translations:  
@@ -80,7 +80,7 @@ Internationalization (i18n) strings are included in compiled .map files. To work
 - Once translations are complete, delete them before deploying to production.  
 - If .map files are missing, ensure your environment is set to development mode and run your development build command before proceeding.
 
-Open a terminal at the root of your theme to build your project:
+Open a terminal at the root of your theme or your plugin to build your project:
 
 ```bash
 npm run start 
@@ -92,9 +92,9 @@ yarn start
 <br>
 <br>
 
-### 4. Generate POT file for the theme or the plugin
+### 4. Generate the POT file (translation template) for the theme or the plugin
 
-Create a POT file (translation template):
+Create a POT file:
 
 ```bash
 wp i18n make-pot ./ languages/my-text-domain.pot --exclude="node_modules/*,src/*,vendor/*"
@@ -147,7 +147,7 @@ You can then go straight to the step 8
 <br>
 <br>
 
-### 6. Translate the PO File (translation language)
+### 6. Translate the PO File
 Translate the resulting PO file in you code editor.
     
 <br>
