@@ -1,8 +1,8 @@
 # WordPress Theme and Plugin JS Internationalization (i18n) Guide 2025
-## Tested on WordPress versions: 6.8.1, 6.8.2
 This guide explains how to fully internationalize JavaScript (and PHP) files in a WordPress theme.
+WordPress versions: 6.8.1, 6.8.2, 6.8.3
 
-## Bash commands recap - Follow the Step-by-Step Guide for details
+## Bash commands recap - Follow the Step-by-Step Guide for the details
 
 ```bash
 npm run start 
@@ -64,7 +64,7 @@ If you previously used the import syntax, you'll need to refactor all your compo
 
 ### 3. Build your theme
 
-For internationalization, you must use the compiled JavaScript files from your build or dist directory, not the original source files in src.  
+For internationalization, you must use the compiled JavaScript files from your build or dist directory, not the original source files.  
 Internationalization (i18n) strings are included in compiled .map files. To work with translations:  
 - Set your environment to development mode.  
 - Keep the .map files while translating.  
@@ -101,43 +101,41 @@ Respect this filename format for translation language files: `{my-text-domain}-{
 Then, proceed based on your scenario:
 
 **Case 1: The PO file doesn’t exist** 
+
 Create the PO file by copying and renaming the .pot file, then update translations:
 ```bash
 cp languages/my-text-domain.pot languages/{my-text-domain}-{language-code}.po
-wp i18n update-po languages/my-text-domain.pot languages/{my-text-domain}-{language-code}.po
 ```
 
 **Case 2: The PO file already exists** 
+
 Update the existing PO file with the latest strings from the .pot file:
 
 ```bash
 wp i18n update-po languages/my-text-domain.pot languages/{my-text-domain}-{language-code}.po
 ```
 
-**Case 3: Using Poedit for translation**
-Manually create the PO file in Poedit by:
+**Case 3: Using Poedit application for translation (PHP only)**
+
+If you choose to translate with Poedit, any subsequent use of `wp i18n update-po` will overwrite the translations you added in Poedit, requiring you to start over. 
+Note that Poedit does not automatically scan JavaScript files, so Poedit translation is only suitable for PHP files. 
+To manually create the PO file in Poedit:
   - Opening Poedit → New Translation from POT File
   - Selecting my-text-domain.pot and saving as {my-text-domain}-{language-code}.po
 
 ### 6. Translate the PO File (translation language)
-You can manually translate the resulting PO file in you code editor or you can use an application, the best known may be Poedit: [https://poedit.net/](https://poedit.net/)
-The free version is sufficient for all necessary translation tasks.
-
-You can translate the .po file:
-Manually – Edit it in a code editor (e.g., VS Code, Sublime Text).
-Using Poedit – The recommended GUI tool [https://poedit.net/](https://poedit.net/).
-The free version covers all essential translation needs.
+Translate the resulting PO file in you code editor.
 
 ### 7. Generate MO and JSON files
 
-#### Generate MO file
-If you used Poedit, it automatically generates a .mo file. However, for WordPress compatibility, regenerate it via WP-CLI in your working directory:
+#### Generate the MO file (Compiled translation language)
+Create it with WP-CLI in your working directory:
 ```bash
 wp i18n make-mo languages/{my-text-domain}-{language-code}.po
 ```
 
-#### Generate JSON files
-After your MO file has been properly generated, you can proceed with the `wp i18n make-json` command, as this command will use the MO file as its source:
+#### Generate the JSON files
+After your MO file has been properly created, you can proceed with the `wp i18n make-json` command. This command uses the MO file as its source:
 ```bash
 wp i18n make-json ./languages
 ```
@@ -148,6 +146,7 @@ For a comprehensive list of available internationalization options and commands,
 wp i18n --help
 ```
 
+### You have completed the CLI part. Now you need to load the resulting files into your theme or plugin.
 ### 8. Load translations in your theme or your plugin
 
 For a theme, use the following PHP function to load the translations:
