@@ -20,24 +20,37 @@ npm run build
 
 ## Step-by-Step Guide
 
+- [1. Prerequisites](#1-prerequisites)
+- [2. Correctly use wp.i18n methods in your JavaScript files](#2-correctly-use-wpi18n-methods-in-your-javascript-files)
+- [3. Build your theme or your plugin](#3-build-your-theme-or-your-plugin)
+- [4. Generate the POT file (translation template)](#4-generate-the-pot-file-translation-template-for-the-theme-or-the-plugin)
+- [5. Create or update the PO file (translation language)](#5-create-or-update-the-po-file-translation-language)
+- [6. Translate the PO File](#6-translate-the-po-file)
+- [7. Generate MO and JSON files](#7-generate-mo-and-json-files)
+- [8. Load translations in your theme or plugin](#8-load-translations-in-your-theme-or-your-plugin)
+- [9. Copy language files to WordPress languages directory](#9-copy-language-files-to-wordpress-languages-directory)
+
+<br>
+<br>
+
 ### 1. Prerequisites
 
 Before proceeding, make sure you have:
 
 - **WP-CLI** installed and configured
-  - If not installed, follow the instructions at: [https://wp-cli.org/](https://wp-cli.org/)
+If not installed, follow the instructions at: [https://wp-cli.org/](https://wp-cli.org/)
 
 - **Sufficient PHP Memory**
-  - You may need to increase the PHP memory limit to 256M or more if you encounter memory issues
-  - To find your php.ini file:
+You may need to increase the PHP memory limit to 256M or more if you encounter memory issues<br>
+To find your php.ini file:
     ```bash
     php --ini
     ```
-  - Open the loaded php.ini, look for `memory_limit` and change it to:
+Open the loaded php.ini, look for `memory_limit` and change it to:
     ```
     memory_limit = 512M
     ```
-  - Alternatively, add these lines to your wp-config.php file (remember to remove them once you've completed the translation process):
+Alternatively, add these lines to your wp-config.php file (remember to remove them once you've completed the translation process):
     ```php
     define('WP_MEMORY_LIMIT', '512M');
     define('WP_MAX_MEMORY_LIMIT', '512M');
@@ -141,8 +154,7 @@ Note that Poedit does not automatically scan JavaScript files, so Poedit transla
 To manually create the PO file in Poedit:
   - Opening Poedit → New Translation from POT File
   - Selecting my-text-domain.pot and saving as {my-text-domain}-{language-code}.po
-<br>
-You can then go straight to the step 8
+  - [You can then go straight to step 8. Load translations in your theme or plugin](#8-load-translations-in-your-theme-or-your-plugin)
     
 <br>
 <br>
